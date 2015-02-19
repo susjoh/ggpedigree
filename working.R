@@ -8,6 +8,7 @@ library(plyr)
 
 load("C:/Users/Susan Johnston/Desktop/github/ggpedigree/test_data1.Rdata")
 
+# ped <- pedigree
 ped <- pedigree
 
 simple.ped.name.rules <- function(){
@@ -21,6 +22,7 @@ simple.ped.name.rules <- function(){
 remove.singletons <- TRUE
 cohort <- NULL
 sex <- ped$Sex
+family <- ped$Family
 print.labels <- TRUE
 
 #~~ Format the pedigree
@@ -28,7 +30,7 @@ print.labels <- TRUE
 pednamevec <- c("ID", "ANIMAL", "MUM", "MOM", "MOTHER", "DAM", "DAD", "POP", "FATHER", "SIRE")
 
 names(ped)[which(toupper(names(ped)) %in% pednamevec)] <- toupper(names(ped)[which(toupper(names(ped)) %in% pednamevec)])
-  
+
 if(!any(c("ID", "ANIMAL") %in% names(ped)))   stop(simple.ped.name.rules())
 if(!any(c("MUM", "MOM", "MOTHER", "DAM") %in% names(ped))) stop(simple.ped.name.rules())
 if(!any(c("DAD", "POP", "FATHER", "SIRE") %in% names(ped))) stop(simple.ped.name.rules())
@@ -51,6 +53,9 @@ if(is.null(cohort)){
 }
 
 if(!is.null(cohort)) ped$graphCohort <- cohort
+
+
+
 
 #~~ Add sex to data frame if specified
 
@@ -163,3 +168,37 @@ ggplot(ped3, aes(x, -graphCohort)) +
   scale_y_continuous(breaks = -seq(min(cohort.order), max(cohort.order), 1),
                      labels =  cohort.labels) +
   labs(x = xlab, y = ylab)
+
+
+
+
+
+
+
+
+
+##########################################
+
+
+} else {
+  
+  newped <- NULL
+  
+  for(i in unique(family)){
+    
+    tempped <- subset(ped, family == i)
+    
+    cohortvec <- data.frame(ID = tempped[,1],
+                            graphCohort = kindepth(tempped[,"ID"],
+                                                   tempped[,"FATHER"],
+                                                   tempped[,"MOTHER"]))
+    
+    tempped <- join(tempped, cohortvec)
+    
+    newped <- rbind(newped, tempped)
+    
+    rm(tempped, cohortvec)
+  }
+}
+
+newped
