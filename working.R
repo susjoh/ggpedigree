@@ -8,10 +8,9 @@ library(plyr)
 
 load("C:/Users/Susan Johnston/Desktop/github/ggpedigree/test_data1.Rdata")
 
-# ped <- pedigree
 ped <- pedigree
 
-simple.ped.name.rules <- function(){
+ped.name.rules <- function(){
   writeLines("Pedigree object should contain the following columns:
                ID should be named ID or ANIMAL
                Mother should be MOTHER, MUM, MOM or DAM
@@ -20,20 +19,20 @@ simple.ped.name.rules <- function(){
 
 # arguments
 remove.singletons <- TRUE
-cohort <- NULL
+cohort <- ped$BirthYear
 sex <- ped$Sex
 family <- ped$Family
 print.labels <- TRUE
 
-#~~ Format the pedigree
+#~~ Format the pedigree to have ID, MOTHER, FATHER columns.
 
 pednamevec <- c("ID", "ANIMAL", "MUM", "MOM", "MOTHER", "DAM", "DAD", "POP", "FATHER", "SIRE")
 
 names(ped)[which(toupper(names(ped)) %in% pednamevec)] <- toupper(names(ped)[which(toupper(names(ped)) %in% pednamevec)])
 
-if(!any(c("ID", "ANIMAL") %in% names(ped)))   stop(simple.ped.name.rules())
-if(!any(c("MUM", "MOM", "MOTHER", "DAM") %in% names(ped))) stop(simple.ped.name.rules())
-if(!any(c("DAD", "POP", "FATHER", "SIRE") %in% names(ped))) stop(simple.ped.name.rules())
+if(!any(c("ID", "ANIMAL")                 %in% names(ped))) stop(ped.name.rules())
+if(!any(c("MUM", "MOM", "MOTHER", "DAM")  %in% names(ped))) stop(ped.name.rules())
+if(!any(c("DAD", "POP", "FATHER", "SIRE") %in% names(ped))) stop(ped.name.rules())
 
 names(ped)[which(names(ped) %in% c("ID", "ANIMAL"))]                 <- "ID"
 names(ped)[which(names(ped) %in% c("MUM", "MOM", "MOTHER", "DAM"))]  <- "MOTHER"
@@ -55,8 +54,6 @@ if(is.null(cohort)){
 if(!is.null(cohort)) ped$graphCohort <- cohort
 
 
-
-
 #~~ Add sex to data frame if specified
 
 if(!is.null(sex)) ped$graphSex <- sex
@@ -64,25 +61,32 @@ if(!is.null(sex)) ped$graphSex <- sex
 #~~ Remove Singletons
 
 if(remove.singletons == TRUE){
+  
   singleton.vec <- which(ped$MOTHER == 0 & ped$FATHER == 0 & !ped$ID %in% c(ped$MOTHER, ped$FATHER))
+  
   if(length(singleton.vec) > 0) ped <- ped[-singleton.vec,]
+
 }
 
-#~~ Melt the pedigree
+#~~ Melt the pedigree and get rid of connections where value = 0
 
 ped2 <- melt(ped, id.vars = c("ID"), measure.vars = c("MOTHER", "FATHER"))
-ped2 <- subset(ped2, !is.na(value))
 
-head(ped2)
+ped2 <- subset(ped2, value != 0)
 
 names(ped2)[which(names(ped2) == "value")] <- "Parent.ID"
+
+#~~ Create a group vector for parent/offspring relationship
+
 ped2$Group <- 1:nrow(ped2)
 head(ped2)
+
+#~~ Melt to create a single line per ID with Group specified
 
 ped3 <- melt(ped2, id.vars = "Group", measure.vars=c("ID", "Parent.ID"))
 ped3[1:10,]
 
-names(ped3)[3] <- "ID"
+names(ped3)[which(names(ped3) == "value")] <- "ID"
 
 #~~ Add cohort and sex information
 
@@ -91,13 +95,6 @@ ped3 <- join(ped3, ped[,c("ID", "graphCohort")])
 if(!is.null(sex)) ped3 <- join(ped3, ped[,c("ID", "graphSex")])
 
 head(ped3)
-
-#~~ Remove groups with zeros
-
-if(0 %in% ped3$ID){
-  groupRemove <- ped3[which(ped3$ID == 0), "Group"]
-  ped3 <- subset(ped3, !Group %in% groupRemove)
-}
 
 #~~ Generate X coordinates
 
@@ -119,14 +116,13 @@ generateXcoord <- function(size){
   x
 }
 
-
 xcoords <- NULL
 
 for(i in unique(ped3$graphCohort)){
   
-  # Extract the number of Unique IDs per year and generate X coords
+  # Extract the number of Unique IDs per cohort and generate X coords
   ids  <- unique(ped3$ID[which(ped3$graphCohort == i)])
-  newx <- generateXcoord(length(ids)) # generate X coordinates
+  newx <- generateXcoord(length(ids))
   
   # Append to xcoords
   xcoords <- rbind(xcoords,
@@ -140,6 +136,8 @@ for(i in unique(ped3$graphCohort)){
 
 ped3 <- join(ped3, xcoords)
 
+head(ped3)
+
 #~~ Plot
 
 cohort.order  <- sort(unique(ped3$graphCohort))
@@ -148,10 +146,9 @@ cohort.labels <- cohort.order
 if(print.labels == FALSE) cohort.labels <- rep("", length(cohort.order))
 
 line.alpha <- 0.1
-point.size <- 4
+point.size <- 1
 xlab <- ""
 ylab <- ""
-legend.pos <- ifelse(is.null(sex), "none", "bottom")
 bg.colour <- "ivory"
 
 ggplot(ped3, aes(x, -graphCohort)) +
@@ -178,27 +175,27 @@ ggplot(ped3, aes(x, -graphCohort)) +
 
 
 ##########################################
-
-
-} else {
-  
-  newped <- NULL
-  
-  for(i in unique(family)){
-    
-    tempped <- subset(ped, family == i)
-    
-    cohortvec <- data.frame(ID = tempped[,1],
-                            graphCohort = kindepth(tempped[,"ID"],
-                                                   tempped[,"FATHER"],
-                                                   tempped[,"MOTHER"]))
-    
-    tempped <- join(tempped, cohortvec)
-    
-    newped <- rbind(newped, tempped)
-    
-    rm(tempped, cohortvec)
-  }
-}
-
-newped
+# 
+# 
+# } else {
+#   
+#   newped <- NULL
+#   
+#   for(i in unique(family)){
+#     
+#     tempped <- subset(ped, family == i)
+#     
+#     cohortvec <- data.frame(ID = tempped[,1],
+#                             graphCohort = kindepth(tempped[,"ID"],
+#                                                    tempped[,"FATHER"],
+#                                                    tempped[,"MOTHER"]))
+#     
+#     tempped <- join(tempped, cohortvec)
+#     
+#     newped <- rbind(newped, tempped)
+#     
+#     rm(tempped, cohortvec)
+#   }
+# }
+# 
+# newped
