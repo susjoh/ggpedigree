@@ -13,8 +13,8 @@ pedigree$Sex[which(pedigree$Sex == 1)] <- "F"
 
 ped <- pedigree
 
-# ped <- read.table("../../test_78.ped", header = T)
-# head(ped)
+#ped <- read.table("../../test_78.ped", header = T)
+head(ped)
 
 ped.name.rules <- function(){
   writeLines("Pedigree object should contain the following columns:
