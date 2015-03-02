@@ -1,8 +1,12 @@
 Package: ggpedigree
-Title: What the package does (short line)
-Version: 0.1
-Authors@R: "First Last <first.last@example.com> [aut, cre]"
-Description: What the package does (paragraph)
+Title: Draws pedigrees with ggplot2
+Version: 0.0
+Authors@R: "Susan Johnston<SUsan.Johnston@ed.ac.uk> [aut, cre]"
+Description: This package plots pedigree data using ggplot2.
 Depends: R (>= 3.1.1)
-License: What license is it under?
+License: GPL-2|GPL-3
 LazyData: true
+URL: https://github.com/susjoh/ggpedigree
+BugReports: https://github.com/susjoh/ggpedigree/issues
+Imports: kinship2, ggplot2, grid, reshape, plyr
+
