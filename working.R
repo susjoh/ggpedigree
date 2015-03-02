@@ -10,6 +10,8 @@ load("C:/Users/Susan Johnston/Desktop/github/ggpedigree/test_data1.Rdata")
 
 ped <- pedigree
 
+ped <- pedigree[sample(1:nrow(pedigree), 600),]
+
 ped.name.rules <- function(){
   writeLines("Pedigree object should contain the following columns:
                ID should be named ID or ANIMAL
@@ -19,9 +21,11 @@ ped.name.rules <- function(){
 
 # arguments
 remove.singletons <- TRUE
-cohort <- ped$BirthYear
+cohort <- NULL #ped$BirthYear
 sex <- ped$Sex
-family <- ped$Family
+malecode <- 1
+femalecode <- 0
+family <- NULL
 print.labels <- TRUE
 
 #~~ Format the pedigree to have ID, MOTHER, FATHER columns.
@@ -40,7 +44,56 @@ names(ped)[which(names(ped) %in% c("DAD", "POP", "FATHER", "SIRE"))] <- "FATHER"
 
 for(i in which(names(ped) %in% c("ID", "MOTHER", "FATHER"))) ped[which(is.na(ped[,i])),i] <- 0
 
-#~~ Determine cohorts and add to the ped data.frame
+
+#~~ Add sex and cohort to data frame if specified
+
+if(!is.null(sex)) ped$graphSex <- sex
+
+
+if(!is.null(cohort)) ped$graphCohort <- cohort
+
+
+
+#~~ Add in parents that are not in the ID part as founders
+
+head(ped)
+if(any(!ped$FATHER %in% ped$ID)) dadtab <- data.frame(ID = ped[which(!ped$FATHER %in% ped$ID),"FATHER"],
+                                                      MOTHER = 0, FATHER = 0)
+if(any(!ped$MOTHER %in% ped$ID)) mumtab <- data.frame(ID = ped[which(!ped$MOTHER %in% ped$ID),"FATHER"],
+                                                      MOTHER = 0, FATHER = 0)
+
+if(!is.null(sex)){
+  dadtab$graphSex <- malecode 
+  mumtab$graphSex <- femalecode
+} else {
+  dadtab$graphSex <- NA
+  mumtab$graphSex <- NA
+}
+
+dadtab <- subset(dadtab, ID != 0)
+mumtab <- subset(mumtab, ID != 0)
+
+if(any(!names(ped) %in% names(dadtab))){
+  nametemp <- names(ped)[which(!names(ped) %in% names(dadtab))]
+  for(i in 1:length(nametemp)){
+    dadtab$Temp999 <- NA
+    names(dadtab)[which(names(dadtab) == "Temp999")] <- nametemp[i]
+  }
+}
+
+if(any(!names(ped) %in% names(mumtab))){
+  nametemp <- names(ped)[which(!names(ped) %in% names(mumtab))]
+  for(i in 1:length(nametemp)){
+    mumtab$Temp999 <- NA
+    names(mumtab)[which(names(mumtab) == "Temp999")] <- nametemp[i]
+  }
+}
+
+
+    
+ped <- rbind(dadtab, mumtab, ped)
+
+#~~ Determine cohorts and add to the ped data.frame if not specified
 
 if(is.null(cohort)){
   
@@ -51,12 +104,7 @@ if(is.null(cohort)){
   
 }
 
-if(!is.null(cohort)) ped$graphCohort <- cohort
 
-
-#~~ Add sex to data frame if specified
-
-if(!is.null(sex)) ped$graphSex <- sex
 
 #~~ Remove Singletons
 
@@ -65,6 +113,7 @@ if(remove.singletons == TRUE){
   singleton.vec <- which(ped$MOTHER == 0 & ped$FATHER == 0 & !ped$ID %in% c(ped$MOTHER, ped$FATHER))
   
   if(length(singleton.vec) > 0) ped <- ped[-singleton.vec,]
+  
 
 }
 
@@ -95,6 +144,14 @@ ped3 <- join(ped3, ped[,c("ID", "graphCohort")])
 if(!is.null(sex)) ped3 <- join(ped3, ped[,c("ID", "graphSex")])
 
 head(ped3)
+
+#~~ Add parental colour information
+
+head(ped2)
+ped2 <- subset(ped2, select = c(Group, variable))
+names(ped2) <- c("Group", "graphParent")
+ped3 <- join(ped3, ped2)
+
 
 #~~ Generate X coordinates
 
