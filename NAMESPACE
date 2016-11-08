@@ -3,4 +3,4 @@
 export(ggpedigree)
 import(ggplot2)
 
->>>>>>> ed9802b562a481089bf9ff1a52372e69f9f7bf4d
+
