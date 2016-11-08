@@ -1,3 +1,30 @@
+#' ggpedigree: Plot a pedigree
+#' @param pedigree, 
+#' @param cohort
+#' @param sex
+#' @param family
+#' @param id.labels
+#' @param remove.singletons
+#' @param colour.parent.lines
+#' @param print.cohort.labels
+#' @param plot.unk.cohort
+#' @param single.cohort.x.shuffle
+#' @param randomise.x
+#' @param return.plot.tables
+#' @param suppress.plot
+#' @param line.col.mother
+#' @param line.col.father
+#' @param line.alpha
+#' @param point.size
+#' @param point.colour
+#' @param point.alpha
+#' @param gg.theme
+#' @param xlab
+#' @param ylab
+#' @param bg.colour
+#' @param plot.margin
+#' @param axis.text.colour
+#' @export
 
 
 ggpedigree <- function(pedigree, 
