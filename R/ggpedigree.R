@@ -1,21 +1,28 @@
 #' ggpedigree: Plot a pedigree
-#' @param pedigree, 
-#' @param cohort
-#' @param sex
-#' @param family
-#' @param id.labels
-#' @param remove.singletons
-#' @param colour.parent.lines
-#' @param print.cohort.labels
-#' @param plot.unk.cohort
-#' @param single.cohort.x.shuffle
-#' @param randomise.x
-#' @param return.plot.tables
-#' @param suppress.plot
-#' @param line.col.mother
-#' @param line.col.father
-#' @param line.alpha
-#' @param point.size
+#' @param pedigree A data frame of id, dam and sire
+#' @param cohort Default NULL. An optional vector assigning a cohort to each id.
+#'   If NULL then uses kindepth function in kinship2 to assign IDs to cohorts.
+#' @param sex Default NULL. An optional vector assigning a sex to each id
+#' @param family Default NULL. An optional vector assigning a family to each id
+#'   (NOT WORKING YET)
+#' @param id.labels logical. Default FALSE. Print the IDs on the pedigree.
+#' @param remove.singletons logical. Default TRUE. Remove IDs with no offspring
+#'   or parents assigned.
+#' @param colour.parent.lines logical. Default TRUE. Colours lines based on
+#'   maternal and paternal links.
+#' @param print.cohort.labels logical. Default TRUE. Prints cohort ideas on left
+#'   hand side of plot.
+#' @param plot.unk.cohort logical. Default TRUE. Show IDs of unknown cohort.
+#' @param single.cohort.x.shuffle logical. Default TRUE. Randomly assign left to
+#'   right position of IDs.
+#' @param randomise.x logical. Default TRUE.
+#' @param return.plot.tables logical. Default FALSE. Returns an object with the
+#'   line and point data used for the plot.
+#' @param suppress.plot logical. Default FALSE. Print plot or not.
+#' @param line.col.mother line colour for mother
+#' @param line.col.father line colour for father
+#' @param line.alpha line alpha for plot
+#' @param point.size 
 #' @param point.colour
 #' @param point.alpha
 #' @param gg.theme
@@ -81,6 +88,8 @@ ggpedigree <- function(pedigree,
   #~~ Create a baseped object
   
   baseped <- ped[,c("ID", "MOTHER", "FATHER")]
+  baseped$MOTHER[is.na(baseped$MOTHER)] <- 0
+  baseped$FATHER[is.na(baseped$FATHER)] <- 0
   
   #~~ Add in parents that are not in the ID part as founders
   
@@ -148,6 +157,7 @@ ggpedigree <- function(pedigree,
   
   #~~ Melt to create a single line per ID with Group specified
   
+  baseped2$ID <- as.character(baseped2$ID)
   baseped3 <- melt(baseped2, id.vars = "Group", measure.vars=c("ID", "Parent.ID"))
   baseped3[1:10,]
   
