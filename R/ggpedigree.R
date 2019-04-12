@@ -32,6 +32,8 @@
 #' @param plot.margin plot margin dimensions
 #' @param axis.text.colour axis text colour
 #' @import reshape2
+#' @import plyr
+#' @import ggplot2
 #' @export
 
 
@@ -61,6 +63,10 @@ ggpedigree <- function(pedigree,
                        plot.margin             = c(1.5, 1.5, 1.5, 1.5),
                        axis.text.colour        = "darkgrey"){
    
+  require(plyr)
+  require(reshape2)
+  require(ggplot2)
+  
   ped <- pedigree
   
   #~~ Format the pedigree to have ID, MOTHER, FATHER columns and recode NA to 0.
