@@ -9,4 +9,4 @@ LazyData: true
 URL: https://github.com/susjoh/ggpedigree
 BugReports: https://github.com/susjoh/ggpedigree/issues
 Imports: kinship2, ggplot2, grid, reshape, plyr
-
+RoxygenNote: 6.1.1

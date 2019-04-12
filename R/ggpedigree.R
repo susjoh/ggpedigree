@@ -22,15 +22,16 @@
 #' @param line.col.mother line colour for mother
 #' @param line.col.father line colour for father
 #' @param line.alpha line alpha for plot
-#' @param point.size 
-#' @param point.colour
-#' @param point.alpha
-#' @param gg.theme
-#' @param xlab
-#' @param ylab
-#' @param bg.colour
-#' @param plot.margin
-#' @param axis.text.colour
+#' @param point.size  point size
+#' @param point.colour point colour
+#' @param point.alpha point alpha
+#' @param gg.theme extra theme information for ggplot
+#' @param xlab x axis label
+#' @param ylab y axis label
+#' @param bg.colour background colour
+#' @param plot.margin plot margin dimensions
+#' @param axis.text.colour axis text colour
+#' @import reshape2
 #' @export
 
 
